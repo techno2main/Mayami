@@ -4,14 +4,14 @@ export function Video() {
   const { content } = useAdminContent();
 
   return (
-    <section id="video" className="relative bg-magenta py-20 sm:py-28">
+    <section id="video" className="relative bg-[oklch(0.88_0.19_95)] py-20 sm:py-28">
       <div className="absolute inset-0 grain" />
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="font-poster text-xs uppercase tracking-[0.3em] text-(--cream)/80">{content.video.kicker}</p>
-            <h2 className="mt-2 font-display text-5xl leading-[0.9] text-cream sm:text-7xl">{content.video.title}</h2>
-            <p className="mt-3 max-w-xl text-(--cream)/90">
+            <p className="font-poster text-xs uppercase tracking-[0.3em] text-ink/80">{content.video.kicker}</p>
+            <h2 className="mt-2 font-display text-5xl leading-[0.9] text-ink sm:text-7xl">{content.video.title}</h2>
+            <p className="mt-3 max-w-xl text-ink/90">
               {content.video.description}
             </p>
           </div>

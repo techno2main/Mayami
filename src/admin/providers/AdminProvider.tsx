@@ -14,6 +14,7 @@ import {
   signOutAdmin,
 } from "@/admin/services/cloudContentService";
 import { loadLocalContent, saveLocalContent } from "@/admin/services/localContentService";
+import { normalizeAdminContentAssets } from "@/admin/services/normalizeContentAssets";
 import { isSupabaseConfigured } from "@/admin/services/supabaseClient";
 import type { AdminContent, AdminSyncState } from "@/admin/types/content";
 
@@ -21,6 +22,8 @@ export type AdminContextValue = {
   content: AdminContent;
   setContent: (next: AdminContent) => void;
   resetContent: () => void;
+  locale: "en" | "fr";
+  setLocale: (next: "en" | "fr") => void;
   cloudEnabled: boolean;
   cloudState: AdminSyncState;
   cloudMessage: string | null;
@@ -33,8 +36,15 @@ export type AdminContextValue = {
 
 export const AdminContentContext = createContext<AdminContextValue | null>(null);
 
+const ADMIN_LOCALE_KEY = "mayami-admin-locale-v1";
+
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [content, setContentState] = useState<AdminContent>(() => loadLocalContent());
+  const [locale, setLocaleState] = useState<"en" | "fr">(() => {
+    if (typeof window === "undefined") return "en";
+    const saved = window.localStorage.getItem(ADMIN_LOCALE_KEY);
+    return saved === "fr" ? "fr" : "en";
+  });
   const [cloudState, setCloudState] = useState<AdminSyncState>("idle");
   const [cloudMessage, setCloudMessage] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -42,8 +52,16 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const cloudEnabled = isSupabaseConfigured();
 
   const setContent = (next: AdminContent) => {
-    setContentState(next);
-    saveLocalContent(next);
+    const normalized = normalizeAdminContentAssets(next);
+    setContentState(normalized);
+    saveLocalContent(normalized);
+  };
+
+  const setLocale = (next: "en" | "fr") => {
+    setLocaleState(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ADMIN_LOCALE_KEY, next);
+    }
   };
 
   const resetContent = () => {
@@ -52,7 +70,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
 
   const loadFromCloud = async () => {
     if (!cloudEnabled) {
-      setCloudMessage("Supabase n'est pas configure.");
+      setCloudMessage("Supabase is not configured.");
       return;
     }
 
@@ -63,26 +81,26 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       const remote = await loadCloudContent();
       if (remote) {
         setContent(remote);
-        setCloudMessage("Contenu charge depuis Supabase.");
+        setCloudMessage("Content loaded from Supabase.");
       } else {
-        setCloudMessage("Aucun contenu distant, contenu local conserve.");
+        setCloudMessage("No remote content found. Local content kept.");
       }
       setCloudState("idle");
     } catch (error) {
       setCloudState("error");
-      setCloudMessage(error instanceof Error ? error.message : "Erreur de chargement cloud");
+      setCloudMessage(error instanceof Error ? error.message : "Cloud load error.");
     }
   };
 
   const saveToCloud = async () => {
     if (!cloudEnabled) {
-      setCloudMessage("Supabase n'est pas configure.");
+      setCloudMessage("Supabase is not configured.");
       return;
     }
 
     if (!userEmail) {
       setCloudState("error");
-      setCloudMessage("Connecte-toi pour sauvegarder dans le cloud.");
+      setCloudMessage("Sign in before saving to cloud.");
       return;
     }
 
@@ -92,10 +110,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     try {
       await saveCloudContent(content);
       setCloudState("idle");
-      setCloudMessage("Sauvegarde cloud terminee.");
+      setCloudMessage("Cloud save completed.");
     } catch (error) {
       setCloudState("error");
-      setCloudMessage(error instanceof Error ? error.message : "Erreur de sauvegarde cloud");
+      setCloudMessage(error instanceof Error ? error.message : "Cloud save error.");
     }
   };
 
@@ -108,18 +126,18 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       const signedEmail = await getCurrentAdminUserEmail();
       setUserEmail(signedEmail);
       setCloudState("idle");
-      setCloudMessage("Connecte a Supabase.");
+      setCloudMessage("Connected to Supabase.");
       await loadFromCloud();
     } catch (error) {
       setCloudState("error");
-      setCloudMessage(error instanceof Error ? error.message : "Erreur de connexion Supabase");
+      setCloudMessage(error instanceof Error ? error.message : "Supabase sign-in error.");
     }
   };
 
   const signOut = async () => {
     await signOutAdmin();
     setUserEmail(null);
-    setCloudMessage("Deconnecte de Supabase.");
+    setCloudMessage("Signed out from Supabase.");
   };
 
   useEffect(() => {
@@ -139,7 +157,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         if (cancelled) return;
         setCloudState("error");
-        setCloudMessage(error instanceof Error ? error.message : "Erreur d'initialisation Supabase");
+        setCloudMessage(error instanceof Error ? error.message : "Supabase initialization error.");
       }
     })();
 
@@ -153,6 +171,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       content,
       setContent,
       resetContent,
+      locale,
+      setLocale,
       cloudEnabled,
       cloudState,
       cloudMessage,
@@ -162,7 +182,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       loadFromCloud,
       saveToCloud,
     }),
-    [content, cloudEnabled, cloudState, cloudMessage, userEmail],
+    [content, locale, cloudEnabled, cloudState, cloudMessage, userEmail],
   );
 
   return <AdminContentContext.Provider value={value}>{children}</AdminContentContext.Provider>;

@@ -1,19 +1,43 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { defaultAdminContent } from "@/admin/config/defaultContent";
 import { useAdminContent } from "@/admin/hooks/useAdminContent";
 import type { AdminSlide } from "@/admin/types/content";
-import { Area, Field } from "@/admin/components/AdminFormFields";
+import { Area, Field, MediaField } from "@/admin/components/AdminFormFields";
+import { uploadMediaFile } from "@/admin/services/mediaStorageService";
 
-type AdminPanelProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+const ADMIN_SECTIONS = [
+  { id: "admin-cloud", label: "Cloud" },
+  { id: "admin-hero", label: "Hero" },
+  { id: "admin-slider", label: "Slider" },
+  { id: "admin-stream", label: "Stream" },
+  { id: "admin-social", label: "Social" },
+  { id: "admin-video", label: "Video" },
+  { id: "admin-release", label: "Release" },
+  { id: "admin-release-rows", label: "Release Rows" },
+  { id: "admin-cta", label: "CTA" },
+  { id: "admin-footer", label: "Footer" },
+  { id: "admin-links", label: "Links" },
+  { id: "admin-export", label: "Export" },
+] as const;
 
-export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
+type AdminSectionId = (typeof ADMIN_SECTIONS)[number]["id"];
+
+function getInitialOpenSections(): Record<AdminSectionId, boolean> {
+  return ADMIN_SECTIONS.reduce(
+    (acc, section) => {
+      acc[section.id] = false;
+      return acc;
+    },
+    {} as Record<AdminSectionId, boolean>,
+  );
+}
+
+export function AdminPanel() {
   const {
     content,
     setContent,
-    resetContent,
+    locale,
+    setLocale,
     cloudEnabled,
     cloudState,
     cloudMessage,
@@ -26,6 +50,10 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  const [mediaStatus, setMediaStatus] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<AdminSectionId, boolean>>(getInitialOpenSections);
+  const [activeSection, setActiveSection] = useState<AdminSectionId>("admin-cloud");
 
   const platformRows = useMemo(
     () => [
@@ -39,52 +67,136 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     [],
   );
 
-  if (!isOpen) return null;
-
   const updateSlide = (index: number, nextSlide: AdminSlide) => {
     const nextSlides = [...content.heroSlider];
     nextSlides[index] = nextSlide;
     setContent({ ...content, heroSlider: nextSlides });
   };
 
+  const toggleSection = (id: AdminSectionId) => {
+    setOpenSections((current) => ({ ...current, [id]: !current[id] }));
+    setActiveSection(id);
+  };
+
+  const openSection = (id: AdminSectionId) => {
+    setOpenSections((current) => ({ ...current, [id]: true }));
+    setActiveSection(id);
+  };
+
+  const uploadToMediaLibrary = async (file: File, folder: string) => {
+    if (!cloudEnabled) {
+      throw new Error("Enable Supabase configuration before uploading media.");
+    }
+
+    if (!userEmail) {
+      throw new Error("Sign in to Supabase before uploading media.");
+    }
+
+    setMediaStatus(`Uploading ${file.name}...`);
+    try {
+      const uploadedUrl = await uploadMediaFile(file, folder);
+      setMediaStatus(`Uploaded: ${file.name}`);
+      return uploadedUrl;
+    } catch (error) {
+      setMediaStatus(error instanceof Error ? error.message : "Upload failed.");
+      throw error;
+    }
+  };
+
   return (
-    <aside className="fixed inset-0 z-120 bg-ink/60 p-3 backdrop-blur-sm sm:p-6">
-      <div className="mx-auto h-full w-full max-w-5xl overflow-y-auto rounded-3xl border-2 border-ink bg-cream p-4 sm:p-6" style={{ boxShadow: "12px 12px 0 var(--ink)" }}>
+    <main className="min-h-screen bg-[oklch(0.31_0.11_25)] px-3 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl rounded-3xl border-2 border-ink bg-cream p-4 sm:p-6" style={{ boxShadow: "12px 12px 0 var(--ink)" }}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-3xl text-ink sm:text-4xl">Admin Content</h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => resetContent()}
-              className="rounded-full border-2 border-ink bg-aqua px-4 py-2 font-poster text-xs uppercase tracking-[0.18em] text-ink"
-            >
-              Reset defaults
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-              }}
-              className="rounded-full border-2 border-ink bg-[oklch(0.88_0.19_95)] px-4 py-2 font-poster text-xs uppercase tracking-[0.18em] text-ink"
-            >
-              Close
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-display text-3xl text-ink sm:text-4xl">Admin Content</h2>
+            <span className="rounded-full border-2 border-ink bg-background px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink/80">
+              {userEmail ? `Connected: ${userEmail}` : "Not signed in"}
+            </span>
+            <div className="ml-1 flex overflow-hidden rounded-full border-2 border-ink">
+              <button
+                type="button"
+                onClick={() => setLocale("en")}
+                className={`px-2 py-1 font-poster text-[10px] uppercase tracking-[0.15em] ${locale === "en" ? "bg-ink text-cream" : "bg-background text-ink"}`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocale("fr")}
+                className={`px-2 py-1 font-poster text-[10px] uppercase tracking-[0.15em] ${locale === "fr" ? "bg-ink text-cream" : "bg-background text-ink"}`}
+              >
+                FR
+              </button>
+            </div>
           </div>
         </div>
 
-        <section className="mb-6 rounded-2xl border-2 border-ink bg-background p-4">
-          <p className="font-poster text-xs uppercase tracking-[0.2em] text-ink/70">Cloud sync (Supabase)</p>
+        <nav className="-mx-4 sticky top-0 z-20 mb-6 border-2 border-ink bg-cream px-3 py-2 sm:-mx-6">
+          <div className="flex items-center justify-between gap-2 sm:hidden">
+            <p className="font-poster text-[10px] uppercase tracking-[0.2em] text-ink/70">Admin sections</p>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((value) => !value)}
+              aria-expanded={mobileMenuOpen}
+              aria-label="Toggle admin sections menu"
+              className="rounded-full border-2 border-ink bg-aqua px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink"
+            >
+              {mobileMenuOpen ? "Close" : "Menu"}
+            </button>
+          </div>
+
+          <div className="hidden flex-wrap gap-2 sm:flex">
+            {ADMIN_SECTIONS.map((section) => (
+              <a
+                key={section.id}
+                href={`#${section.id}`}
+                onClick={() => openSection(section.id)}
+                className={`rounded-full border-2 border-ink px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink transition hover:bg-aqua ${activeSection === section.id ? "bg-aqua" : "bg-background"}`}
+              >
+                {section.label}
+              </a>
+            ))}
+          </div>
+
+          {mobileMenuOpen ? (
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
+              {ADMIN_SECTIONS.map((section) => (
+                <a
+                  key={section.id}
+                  href={`#${section.id}`}
+                  onClick={() => {
+                    openSection(section.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`rounded-full border-2 border-ink px-3 py-1 text-center font-poster text-[10px] uppercase tracking-[0.15em] text-ink ${activeSection === section.id ? "bg-aqua" : "bg-background"}`}
+                >
+                  {section.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </nav>
+
+        <CollapsibleSection
+          id="admin-cloud"
+          title="Cloud Sync (Supabase)"
+          isOpen={openSections["admin-cloud"]}
+          isActive={activeSection === "admin-cloud"}
+          onToggle={() => toggleSection("admin-cloud")}
+          className="mb-6"
+        >
           {cloudEnabled ? (
             <>
-              <p className="mt-1 text-sm text-ink/75">
-                {userEmail ? `Connecte: ${userEmail}` : "Non connecte"} · Etat: {cloudState}
+              <p className="text-sm text-ink/75">
+                {userEmail ? `Connected: ${userEmail}` : "Not signed in"} · State: {cloudState}
               </p>
               {cloudMessage ? <p className="mt-1 text-sm text-ink/75">{cloudMessage}</p> : null}
+              {mediaStatus ? <p className="mt-1 text-sm text-ink/75">{mediaStatus}</p> : null}
 
               {!userEmail ? (
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   <Field label="Email" value={emailInput} onChange={setEmailInput} />
-                  <Field label="Mot de passe" value={passwordInput} onChange={setPasswordInput} />
+                  <Field label="Password" value={passwordInput} onChange={setPasswordInput} />
                   <div className="flex items-end">
                     <button
                       type="button"
@@ -122,28 +234,45 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
               )}
             </>
           ) : (
-            <p className="mt-1 text-sm text-ink/75">
-              Mode local uniquement: configure VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY pour activer le cloud.
+            <p className="text-sm text-ink/75">
+              Local mode only: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable cloud sync.
             </p>
           )}
-        </section>
+        </CollapsibleSection>
 
-        <p className="mb-6 text-sm text-ink/70">Le contenu est modifiable ici et sauvegarde localement automatiquement.</p>
+        <p className="mb-6 text-sm text-ink/70">
+          {cloudEnabled
+            ? "You can edit content here. Changes are auto-saved locally, then synced to cloud with SAVE CLOUD."
+            : "You can edit content here. Changes are auto-saved locally."}
+        </p>
 
-        <section className="grid gap-3 sm:grid-cols-2">
-          <Field label="Hero - Artiste" value={content.hero.topArtist} onChange={(v) => setContent({ ...content, hero: { ...content.hero, topArtist: v } })} />
-          <Field label="Hero - CTA haut" value={content.hero.topCtaLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, topCtaLabel: v } })} />
+        <CollapsibleSection
+          id="admin-hero"
+          title="Hero"
+          isOpen={openSections["admin-hero"]}
+          isActive={activeSection === "admin-hero"}
+          onToggle={() => toggleSection("admin-hero")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Hero - Artist" value={content.hero.topArtist} onChange={(v) => setContent({ ...content, hero: { ...content.hero, topArtist: v } })} />
+          <Field label="Hero - Top CTA" value={content.hero.topCtaLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, topCtaLabel: v } })} />
           <Field label="Hero - Badge" value={content.hero.badgeText} onChange={(v) => setContent({ ...content, hero: { ...content.hero, badgeText: v } })} />
-          <Field label="Hero - Sous titre" value={content.hero.subtitle} onChange={(v) => setContent({ ...content, hero: { ...content.hero, subtitle: v } })} />
+          <Field label="Hero - Subtitle" value={content.hero.subtitle} onChange={(v) => setContent({ ...content, hero: { ...content.hero, subtitle: v } })} />
           <Area label="Hero - Description" value={content.hero.description} onChange={(v) => setContent({ ...content, hero: { ...content.hero, description: v } })} />
-          <Field label="Bouton Stream - Label" value={content.hero.streamLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, streamLabel: v } })} />
-          <Field label="Bouton Stream - Lien" value={content.hero.streamHref} onChange={(v) => setContent({ ...content, hero: { ...content.hero, streamHref: v } })} />
-          <Field label="Bouton Watch - Label" value={content.hero.watchLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, watchLabel: v } })} />
-          <Field label="Bouton Watch - Lien" value={content.hero.watchHref} onChange={(v) => setContent({ ...content, hero: { ...content.hero, watchHref: v } })} />
-        </section>
+          <Field label="Stream Button - Label" value={content.hero.streamLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, streamLabel: v } })} />
+          <Field label="Stream Button - Link" value={content.hero.streamHref} onChange={(v) => setContent({ ...content, hero: { ...content.hero, streamHref: v } })} />
+          <Field label="Watch Button - Label" value={content.hero.watchLabel} onChange={(v) => setContent({ ...content, hero: { ...content.hero, watchLabel: v } })} />
+          <Field label="Watch Button - Link" value={content.hero.watchHref} onChange={(v) => setContent({ ...content, hero: { ...content.hero, watchHref: v } })} />
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8">
-          <h3 className="font-poster text-xs uppercase tracking-[0.25em] text-ink/70">Hero Slider</h3>
+        <CollapsibleSection
+          id="admin-slider"
+          title="Hero Slider"
+          isOpen={openSections["admin-slider"]}
+          isActive={activeSection === "admin-slider"}
+          onToggle={() => toggleSection("admin-slider")}
+        >
           <div className="mt-3 space-y-4">
             {content.heroSlider.map((slide, index) => (
               <div key={index} className="rounded-2xl border-2 border-ink bg-background p-3">
@@ -151,7 +280,10 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                   <p className="font-poster text-xs uppercase tracking-[0.2em] text-ink">Slide {index + 1}</p>
                   <button
                     type="button"
-                    onClick={() => setContent({ ...content, heroSlider: content.heroSlider.filter((_, i) => i !== index) })}
+                    onClick={() => {
+                      if (!window.confirm(`Remove slide ${index + 1}?`)) return;
+                      setContent({ ...content, heroSlider: content.heroSlider.filter((_, i) => i !== index) });
+                    }}
                     className="rounded-full border-2 border-ink bg-ink px-3 py-1 text-xs font-bold uppercase text-cream"
                   >
                     Remove
@@ -179,10 +311,12 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                     onChange={(v) => updateSlide(index, { ...slide, alt: v } as AdminSlide)}
                   />
                   {slide.type === "image" ? (
-                    <Field
+                    <MediaField
                       label="Image URL"
                       value={slide.src}
                       onChange={(v) => updateSlide(index, { ...slide, src: v })}
+                      onUpload={(file) => uploadToMediaLibrary(file, "slider")}
+                      helperText="Use an external image URL or upload directly to Supabase Storage."
                     />
                   ) : (
                     <>
@@ -191,10 +325,12 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                         value={slide.videoUrl}
                         onChange={(v) => updateSlide(index, { ...slide, videoUrl: v })}
                       />
-                      <Field
-                        label="Thumbnail URL (optionnel)"
+                      <MediaField
+                        label="Thumbnail URL (optional)"
                         value={slide.thumbnailSrc ?? ""}
                         onChange={(v) => updateSlide(index, { ...slide, thumbnailSrc: v || undefined })}
+                        onUpload={(file) => uploadToMediaLibrary(file, "slider-thumbnails")}
+                        helperText="Optional. Leave empty to auto-generate thumbnail from YouTube URL."
                       />
                     </>
                   )}
@@ -223,42 +359,97 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
               Add video slide
             </button>
           </div>
-        </section>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-stream"
+          title="Stream"
+          isOpen={openSections["admin-stream"]}
+          isActive={activeSection === "admin-stream"}
+          onToggle={() => toggleSection("admin-stream")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Stream - Kicker" value={content.stream.kicker} onChange={(v) => setContent({ ...content, stream: { ...content.stream, kicker: v } })} />
           <Field label="Stream - Title left" value={content.stream.titlePrefix} onChange={(v) => setContent({ ...content, stream: { ...content.stream, titlePrefix: v } })} />
           <Field label="Stream - Title right" value={content.stream.titleHighlight} onChange={(v) => setContent({ ...content, stream: { ...content.stream, titleHighlight: v } })} />
           <Field label="Stream - Availability" value={content.stream.availabilityText} onChange={(v) => setContent({ ...content, stream: { ...content.stream, availabilityText: v } })} />
           <Field label="Stream - Label cards" value={content.stream.cardLabel} onChange={(v) => setContent({ ...content, stream: { ...content.stream, cardLabel: v } })} />
-        </section>
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-social"
+          title="Social"
+          isOpen={openSections["admin-social"]}
+          isActive={activeSection === "admin-social"}
+          onToggle={() => toggleSection("admin-social")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Social - Kicker" value={content.social.kicker} onChange={(v) => setContent({ ...content, social: { ...content.social, kicker: v } })} />
           <Field label="Social - Title left" value={content.social.titleLeft} onChange={(v) => setContent({ ...content, social: { ...content.social, titleLeft: v } })} />
           <Field label="Social - Title right" value={content.social.titleRight} onChange={(v) => setContent({ ...content, social: { ...content.social, titleRight: v } })} />
           <Area label="Social - Description" value={content.social.description} onChange={(v) => setContent({ ...content, social: { ...content.social, description: v } })} />
-          <Field label="Social - Texture image URL" value={content.social.textureImage} onChange={(v) => setContent({ ...content, social: { ...content.social, textureImage: v } })} />
-        </section>
+          <MediaField
+            label="Social - Texture image URL"
+            value={content.social.textureImage}
+            onChange={(v) => setContent({ ...content, social: { ...content.social, textureImage: v } })}
+            onUpload={(file) => uploadToMediaLibrary(file, "social")}
+            helperText="Either paste an external URL or upload to Supabase Storage."
+          />
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-video"
+          title="Video"
+          isOpen={openSections["admin-video"]}
+          isActive={activeSection === "admin-video"}
+          onToggle={() => toggleSection("admin-video")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Video - Kicker" value={content.video.kicker} onChange={(v) => setContent({ ...content, video: { ...content.video, kicker: v } })} />
-          <Field label="Video - Titre" value={content.video.title} onChange={(v) => setContent({ ...content, video: { ...content.video, title: v } })} />
+          <Field label="Video - Title" value={content.video.title} onChange={(v) => setContent({ ...content, video: { ...content.video, title: v } })} />
           <Area label="Video - Description" value={content.video.description} onChange={(v) => setContent({ ...content, video: { ...content.video, description: v } })} />
           <Field label="Video - Status" value={content.video.statusText} onChange={(v) => setContent({ ...content, video: { ...content.video, statusText: v } })} />
           <Field label="Video - Button" value={content.video.watchButtonLabel} onChange={(v) => setContent({ ...content, video: { ...content.video, watchButtonLabel: v } })} />
-          <Field label="Video - Cover image URL" value={content.video.coverImage} onChange={(v) => setContent({ ...content, video: { ...content.video, coverImage: v } })} />
-        </section>
+          <MediaField
+            label="Video - Cover image URL"
+            value={content.video.coverImage}
+            onChange={(v) => setContent({ ...content, video: { ...content.video, coverImage: v } })}
+            onUpload={(file) => uploadToMediaLibrary(file, "video")}
+            helperText="Either paste an external URL or upload to Supabase Storage."
+          />
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-release"
+          title="Release"
+          isOpen={openSections["admin-release"]}
+          isActive={activeSection === "admin-release"}
+          onToggle={() => toggleSection("admin-release")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Release - Kicker" value={content.releaseInfo.kicker} onChange={(v) => setContent({ ...content, releaseInfo: { ...content.releaseInfo, kicker: v } })} />
           <Field label="Release - Title left" value={content.releaseInfo.titleLeft} onChange={(v) => setContent({ ...content, releaseInfo: { ...content.releaseInfo, titleLeft: v } })} />
           <Field label="Release - Title right" value={content.releaseInfo.titleHighlight} onChange={(v) => setContent({ ...content, releaseInfo: { ...content.releaseInfo, titleHighlight: v } })} />
-          <Field label="Release - Cover image URL" value={content.releaseInfo.coverImage} onChange={(v) => setContent({ ...content, releaseInfo: { ...content.releaseInfo, coverImage: v } })} />
-        </section>
+          <MediaField
+            label="Release - Cover image URL"
+            value={content.releaseInfo.coverImage}
+            onChange={(v) => setContent({ ...content, releaseInfo: { ...content.releaseInfo, coverImage: v } })}
+            onUpload={(file) => uploadToMediaLibrary(file, "release")}
+            helperText="Either paste an external URL or upload to Supabase Storage."
+          />
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8">
-          <h3 className="font-poster text-xs uppercase tracking-[0.25em] text-ink/70">Release rows</h3>
+        <CollapsibleSection
+          id="admin-release-rows"
+          title="Release Rows"
+          isOpen={openSections["admin-release-rows"]}
+          isActive={activeSection === "admin-release-rows"}
+          onToggle={() => toggleSection("admin-release-rows")}
+        >
           <div className="mt-3 space-y-2">
             {content.releaseInfo.rows.map((row, index) => (
               <div key={`${row.key}-${index}`} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
@@ -283,6 +474,7 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 <button
                   type="button"
                   onClick={() => {
+                    if (!window.confirm(`Remove release row ${index + 1}?`)) return;
                     const rows = content.releaseInfo.rows.filter((_, i) => i !== index);
                     setContent({ ...content, releaseInfo: { ...content.releaseInfo, rows } });
                   }}
@@ -308,43 +500,79 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
           >
             Add release row
           </button>
-        </section>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-cta"
+          title="CTA"
+          isOpen={openSections["admin-cta"]}
+          isActive={activeSection === "admin-cta"}
+          onToggle={() => toggleSection("admin-cta")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="CTA - Kicker" value={content.cta.kicker} onChange={(v) => setContent({ ...content, cta: { ...content.cta, kicker: v } })} />
           <Field label="CTA - Title left" value={content.cta.titleLeft} onChange={(v) => setContent({ ...content, cta: { ...content.cta, titleLeft: v } })} />
           <Field label="CTA - Title right" value={content.cta.titleRight} onChange={(v) => setContent({ ...content, cta: { ...content.cta, titleRight: v } })} />
           <Area label="CTA - Description" value={content.cta.description} onChange={(v) => setContent({ ...content, cta: { ...content.cta, description: v } })} />
           <Field label="CTA - Hashtag" value={content.cta.hashtag} onChange={(v) => setContent({ ...content, cta: { ...content.cta, hashtag: v } })} />
-          <Field label="CTA - Texture image URL" value={content.cta.textureImage} onChange={(v) => setContent({ ...content, cta: { ...content.cta, textureImage: v } })} />
-        </section>
+          <MediaField
+            label="CTA - Texture image URL"
+            value={content.cta.textureImage}
+            onChange={(v) => setContent({ ...content, cta: { ...content.cta, textureImage: v } })}
+            onUpload={(file) => uploadToMediaLibrary(file, "cta")}
+            helperText="Either paste an external URL or upload to Supabase Storage."
+          />
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
+        <CollapsibleSection
+          id="admin-footer"
+          title="Footer"
+          isOpen={openSections["admin-footer"]}
+          isActive={activeSection === "admin-footer"}
+          onToggle={() => toggleSection("admin-footer")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Footer line 1" value={content.footer.line1} onChange={(v) => setContent({ ...content, footer: { ...content.footer, line1: v } })} />
           <Field label="Footer line 2" value={content.footer.line2} onChange={(v) => setContent({ ...content, footer: { ...content.footer, line2: v } })} />
           <Field label="Sticky - Stream label" value={content.stickyBar.streamLabel} onChange={(v) => setContent({ ...content, stickyBar: { ...content.stickyBar, streamLabel: v } })} />
           <Field label="Sticky - Video label" value={content.stickyBar.videoLabel} onChange={(v) => setContent({ ...content, stickyBar: { ...content.stickyBar, videoLabel: v } })} />
           <Field label="Sticky - TikTok label" value={content.stickyBar.tiktokLabel} onChange={(v) => setContent({ ...content, stickyBar: { ...content.stickyBar, tiktokLabel: v } })} />
-        </section>
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 grid gap-3 sm:grid-cols-2">
-          <Field label="Lien FFM" value={content.links.ffm} onChange={(v) => setContent({ ...content, links: { ...content.links, ffm: v } })} />
-          <Field label="Lien YouTube Video" value={content.links.youtubeVideo} onChange={(v) => setContent({ ...content, links: { ...content.links, youtubeVideo: v } })} />
-          <Field label="Lien TikTok" value={content.links.tiktok} onChange={(v) => setContent({ ...content, links: { ...content.links, tiktok: v } })} />
-          <Field label="Lien Instagram" value={content.links.instagram} onChange={(v) => setContent({ ...content, links: { ...content.links, instagram: v } })} />
+        <CollapsibleSection
+          id="admin-links"
+          title="Links"
+          isOpen={openSections["admin-links"]}
+          isActive={activeSection === "admin-links"}
+          onToggle={() => toggleSection("admin-links")}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="FFM Link" value={content.links.ffm} onChange={(v) => setContent({ ...content, links: { ...content.links, ffm: v } })} />
+          <Field label="YouTube Video Link" value={content.links.youtubeVideo} onChange={(v) => setContent({ ...content, links: { ...content.links, youtubeVideo: v } })} />
+          <Field label="TikTok Link" value={content.links.tiktok} onChange={(v) => setContent({ ...content, links: { ...content.links, tiktok: v } })} />
+          <Field label="Instagram Link" value={content.links.instagram} onChange={(v) => setContent({ ...content, links: { ...content.links, instagram: v } })} />
           {platformRows.map((row) => (
             <Field
               key={row.key}
-              label={`Lien ${row.label}`}
+              label={`${row.label} Link`}
               value={content.links[row.key]}
               onChange={(v) => setContent({ ...content, links: { ...content.links, [row.key]: v } })}
             />
           ))}
-        </section>
+          </div>
+        </CollapsibleSection>
 
-        <section className="mt-8 rounded-2xl border-2 border-ink bg-background p-4">
-          <p className="font-poster text-xs uppercase tracking-[0.2em] text-ink/70">Export / Import</p>
-          <p className="mt-1 text-sm text-ink/75">Copie la configuration et sauvegarde-la ailleurs pour la reutiliser.</p>
+        <CollapsibleSection
+          id="admin-export"
+          title="Export / Import"
+          isOpen={openSections["admin-export"]}
+          isActive={activeSection === "admin-export"}
+          onToggle={() => toggleSection("admin-export")}
+          className="mb-0"
+        >
+          <p className="text-sm text-ink/75">Copy your configuration and keep a backup to reuse it later.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
@@ -358,13 +586,13 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
             <button
               type="button"
               onClick={() => {
-                const input = window.prompt("Colle ici ton JSON admin");
+                const input = window.prompt("Paste your admin JSON here");
                 if (!input) return;
                 try {
                   const parsed = JSON.parse(input);
                   setContent(parsed);
                 } catch {
-                  window.alert("JSON invalide");
+                  window.alert("Invalid JSON");
                 }
               }}
               className="rounded-full border-2 border-ink bg-[oklch(0.88_0.19_95)] px-4 py-2 font-poster text-xs uppercase tracking-[0.15em] text-ink"
@@ -379,8 +607,37 @@ export function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
               Restore default JSON
             </button>
           </div>
-        </section>
+        </CollapsibleSection>
       </div>
-    </aside>
+    </main>
+  );
+}
+
+type CollapsibleSectionProps = {
+  id: AdminSectionId;
+  title: string;
+  isOpen: boolean;
+  isActive: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+  className?: string;
+};
+
+function CollapsibleSection({ id, title, isOpen, isActive, onToggle, children, className }: CollapsibleSectionProps) {
+  return (
+    <section id={id} className={`scroll-mt-28 mt-8 rounded-2xl border-2 border-ink p-4 ${isActive ? "bg-aqua/20" : "bg-background"} ${className ?? ""}`}>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="flex w-full items-center justify-between gap-2 text-left"
+      >
+        <span className="font-poster text-xs uppercase tracking-[0.25em] text-ink/80">{title}</span>
+        <span className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-ink bg-cream text-sm font-bold text-ink">
+          {isOpen ? "-" : "+"}
+        </span>
+      </button>
+      {isOpen ? <div className="mt-3">{children}</div> : null}
+    </section>
   );
 }

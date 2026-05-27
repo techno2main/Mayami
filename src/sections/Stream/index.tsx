@@ -20,17 +20,17 @@ export function Stream() {
   const selectedEmbed = selectedPlatform ? buildPlatformEmbed(selectedPlatform.name, selectedPlatform.href) : null;
 
   return (
-    <section id="stream" className="relative bg-background py-20 sm:py-28">
+    <section id="stream" className="relative bg-[#6a1b78] py-20 sm:py-28">
       <div className="absolute inset-0 grain" />
       <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
         <div className="mb-10 flex items-end justify-between gap-4">
           <div>
-            <p className="font-poster text-xs uppercase tracking-[0.3em] text-(--ink)/70">{content.stream.kicker}</p>
-            <h2 className="mt-2 font-display text-4xl leading-[0.9] text-ink sm:text-6xl">
+            <p className="font-poster text-xs uppercase tracking-[0.3em] text-cream/80">{content.stream.kicker}</p>
+            <h2 className="mt-2 font-display text-4xl leading-[0.9] text-cream sm:text-6xl">
               {content.stream.titlePrefix} <span style={{ WebkitTextStroke: "0.5px #13f7bc", color: "#410b49" }}>{content.stream.titleHighlight}</span>
             </h2>
           </div>
-          <span className="hidden font-poster text-sm uppercase tracking-[0.2em] text-(--ink)/70 sm:block">
+          <span className="hidden font-poster text-sm uppercase tracking-[0.2em] text-cream/80 sm:block">
             {content.stream.availabilityText}
           </span>
         </div>
@@ -66,13 +66,13 @@ export function Stream() {
                     });
                   }}
                   aria-expanded={isActive}
-                  className={`group relative flex items-center justify-between rounded-2xl border-2 border-ink px-6 py-5 transition hover:-translate-y-1 hover:-translate-x-0.5 ${p.cls}`}
+                  className="group relative flex items-center justify-between rounded-2xl border-2 border-ink bg-cream px-6 py-5 text-ink transition hover:-translate-y-1 hover:-translate-x-0.5"
                   style={{ boxShadow: "6px 6px 0 var(--ink)" }}
                 >
                   <div>
                     <p className="font-poster text-[10px] uppercase tracking-[0.25em] opacity-70">{content.stream.cardLabel}</p>
                     <p className="flex items-center gap-2 font-display text-2xl leading-none">
-                      <span className="text-[0.9em] text-current/90" aria-hidden="true">
+                      <span className="text-[0.9em]" style={{ color: getPlatformBrandColor(p.name) }} aria-hidden="true">
                         <PlatformIcon platformName={p.name} />
                       </span>
                       <span>{p.name}</span>
@@ -219,6 +219,16 @@ function PlatformIcon({ platformName }: { platformName: string }) {
   if (platformName === "Amazon Music") return <FaAmazon />;
   if (platformName === "SoundCloud") return <FaSoundcloud />;
   return null;
+}
+
+function getPlatformBrandColor(platformName: string) {
+  if (platformName === "Spotify") return "#1DB954";
+  if (platformName === "Apple Music") return "#FC3C44";
+  if (platformName === "YouTube Music") return "#FF0000";
+  if (platformName === "Deezer") return "#A238FF";
+  if (platformName === "Amazon Music") return "#00A8E1";
+  if (platformName === "SoundCloud") return "#FF5500";
+  return "currentColor";
 }
 
 function buildSpotifyEmbedUrl(url?: string) {

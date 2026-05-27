@@ -31,3 +31,7 @@ export function getSupabaseClient() {
 export function getContentKey() {
   return import.meta.env.VITE_SUPABASE_CONTENT_KEY || "mayami-live";
 }
+
+export function getStorageBucket() {
+  return import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || "mayami-media";
+}

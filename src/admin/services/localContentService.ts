@@ -1,4 +1,5 @@
 import { defaultAdminContent } from "@/admin/config/defaultContent";
+import { normalizeAdminContentAssets } from "@/admin/services/normalizeContentAssets";
 import type { AdminContent } from "@/admin/types/content";
 
 export const ADMIN_STORAGE_KEY = "mayami-admin-content-v1";
@@ -11,7 +12,7 @@ export function loadLocalContent(): AdminContent {
   try {
     const raw = window.localStorage.getItem(ADMIN_STORAGE_KEY);
     if (!raw) return defaultAdminContent;
-    return JSON.parse(raw) as AdminContent;
+    return normalizeAdminContentAssets(JSON.parse(raw) as AdminContent);
   } catch {
     return defaultAdminContent;
   }

@@ -1,4 +1,5 @@
 import { useAdminContent } from "@/admin";
+import backgroundImg from "@/assets/background.jpeg";
 import { MayamiLogo } from "@/components/MayamiLogo";
 import { HeroSlider } from "./Slider/index";
 
@@ -7,7 +8,15 @@ export function Hero() {
 
   return (
     <section id="hero" className="relative w-full overflow-hidden bg-background">
-      <div className="absolute inset-0 grain" />
+      <img
+        src={backgroundImg}
+        alt=""
+        width={768}
+        height={1366}
+        loading="eager"
+        className="absolute inset-0 h-full w-full -scale-x-100 object-cover opacity-32 filter-[brightness(1.18)_saturate(0.92)] mix-blend-normal"
+      />
+      <div className="absolute inset-0 grain grain-soft" />
 
       {/* Top bar */}
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 pt-5 sm:px-8">

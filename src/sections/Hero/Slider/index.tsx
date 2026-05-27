@@ -1,4 +1,5 @@
 import { useAdminContent } from "@/admin/AdminProvider";
+import coverImg from "@/assets/mayami-cover.jpg";
 import { MayamiLogo } from "@/components/MayamiLogo";
 import { useMemo, useState } from "react";
 
@@ -48,6 +49,8 @@ export function HeroSlider() {
   };
 
   const currentSlide = safeSlides[activeSlide] ?? safeSlides[0];
+  const imageSrc = currentSlide.type === "video" ? currentSlide.thumbnailSrc : currentSlide.src;
+  const imageFallbackSrc = currentSlide.type === "video" ? toYoutubeThumbnailUrl(currentSlide.videoUrl) : coverImg;
 
   return (
     <div>
@@ -58,7 +61,7 @@ export function HeroSlider() {
           className="relative overflow-hidden rounded-3xl border-2 border-ink bg-ink"
           style={{ boxShadow: "12px 12px 0 var(--ink)" }}
         >
-          <div className="relative aspect-3/4 w-full">
+          <div className="relative aspect-11/16 w-full">
             {currentSlide.type === "video" && playInlineVideo ? (
               <iframe
                 title={currentSlide.alt}
@@ -72,11 +75,17 @@ export function HeroSlider() {
             ) : (
               <>
                 <img
-                  src={currentSlide.type === "video" ? currentSlide.thumbnailSrc : currentSlide.src}
+                  src={imageSrc}
                   alt={currentSlide.alt}
                   width={1320}
                   height={1920}
                   className="block h-full w-full object-cover"
+                  onError={(event) => {
+                    const current = event.currentTarget;
+                    if (current.src !== imageFallbackSrc) {
+                      current.src = imageFallbackSrc;
+                    }
+                  }}
                 />
 
                 {currentSlide.type === "video" ? (
@@ -112,7 +121,7 @@ export function HeroSlider() {
             </button>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 border-t-2 border-ink bg-cream px-4 py-3 sm:pl-20">
+          <div className="flex items-center justify-between gap-3 border-t-2 border-ink bg-cream px-4 py-3 sm:pl-20">
             <span className="whitespace-nowrap font-poster text-[10px] uppercase tracking-[0.25em] text-ink">Single · 2026</span>
             <MayamiLogo className="w-auto! max-h-7" />
           </div>

@@ -27,7 +27,7 @@ export async function loadCloudContent() {
 export async function saveCloudContent(content: AdminContent) {
   const client = getSupabaseClient();
   if (!client) {
-    throw new Error("Supabase non configure.");
+    throw new Error("Supabase is not configured.");
   }
 
   const { error } = await client.from("site_content").upsert(
@@ -46,7 +46,7 @@ export async function saveCloudContent(content: AdminContent) {
 
 export async function signInAdmin(email: string, password: string) {
   const client = getSupabaseClient();
-  if (!client) throw new Error("Supabase non configure.");
+  if (!client) throw new Error("Supabase is not configured.");
 
   const { data, error } = await client.auth.signInWithPassword({ email, password });
   if (error) throw error;
