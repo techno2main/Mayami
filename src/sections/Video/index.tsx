@@ -34,7 +34,7 @@ export function Video() {
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[oklch(0.15_0.08_280/0.45)] text-center">
               <span className="flex h-20 w-20 items-center justify-center rounded-full bg-cream text-3xl text-ink shadow-[6px_6px_0_var(--magenta)]">▶</span>
               <p className="font-display text-4xl text-cream sm:text-6xl">Coming soon</p>
-              <a href={YOUTUBE_VIDEO_LINK} className="btn-pop btn-aqua">Watch on YouTube</a>
+              <a href={YOUTUBE_VIDEO_LINK} target="_blank" rel="noreferrer" className="btn-pop btn-aqua">Watch on YouTube</a>
             </div>
           </div>
         </div>

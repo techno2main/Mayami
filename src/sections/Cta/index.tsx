@@ -22,10 +22,10 @@ export function Cta() {
           Stream the single. Watch the video. Tag <span className="font-bold text-aqua">#MayamiMyMiami</span> and ride the wave.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
-          <a href={SPOTIFY_LINK} className="btn-pop btn-magenta">Stream the Single</a>
-          <a href={YOUTUBE_VIDEO_LINK} className="btn-pop btn-aqua">Watch the Video</a>
-          <a href={TIKTOK_LINK} className="btn-pop btn-cream">TikTok</a>
-          <a href={INSTAGRAM_LINK} className="btn-pop btn-ink">Instagram</a>
+          <a href={SPOTIFY_LINK} target="_blank" rel="noreferrer" className="btn-pop btn-magenta">Stream the Single</a>
+          <a href={YOUTUBE_VIDEO_LINK} target="_blank" rel="noreferrer" className="btn-pop btn-aqua">Watch the Video</a>
+          <a href={TIKTOK_LINK} target="_blank" rel="noreferrer" className="btn-pop btn-cream">TikTok</a>
+          <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="btn-pop btn-ink">Instagram</a>
         </div>
       </div>
     </section>

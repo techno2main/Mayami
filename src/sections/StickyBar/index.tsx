@@ -10,7 +10,7 @@ export function StickyBar() {
         <a href="#video" className="flex-1 rounded-full border-2 border-ink bg-aqua px-4 py-3 text-center text-xs font-extrabold uppercase tracking-wider text-ink shadow-[3px_3px_0_var(--ink)]">
           ◉ Video
         </a>
-        <a href={TIKTOK_LINK} className="flex-1 rounded-full border-2 border-ink bg-ink px-4 py-3 text-center text-xs font-extrabold uppercase tracking-wider text-cream shadow-[3px_3px_0_var(--magenta)]">
+        <a href={TIKTOK_LINK} target="_blank" rel="noreferrer" className="flex-1 rounded-full border-2 border-ink bg-ink px-4 py-3 text-center text-xs font-extrabold uppercase tracking-wider text-cream shadow-[3px_3px_0_var(--magenta)]">
           TikTok
         </a>
       </div>

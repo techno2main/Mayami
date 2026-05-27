@@ -23,7 +23,7 @@ export function Social() {
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-          <a href={TIKTOK_LINK} className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-linear-to-br from-magenta to-electric p-7 transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--magenta)" }}>
+          <a href={TIKTOK_LINK} target="_blank" rel="noreferrer" className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-linear-to-br from-magenta to-electric p-7 transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--magenta)" }}>
             <p className="font-poster text-[11px] uppercase tracking-[0.3em] opacity-80">Primary</p>
             <p className="font-display text-5xl">TikTok</p>
             <p className="mt-3 text-sm opacity-90">Catch the snippet trending right now.</p>
@@ -31,7 +31,7 @@ export function Social() {
               Follow @ellene <span className="transition group-hover:translate-x-1">→</span>
             </span>
           </a>
-          <a href={INSTAGRAM_LINK} className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-linear-to-br from-aqua to-electric p-7 text-ink transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--aqua)" }}>
+          <a href={INSTAGRAM_LINK} target="_blank" rel="noreferrer" className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-linear-to-br from-aqua to-electric p-7 text-ink transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--aqua)" }}>
             <p className="font-poster text-[11px] uppercase tracking-[0.3em] opacity-70">Primary</p>
             <p className="font-display text-5xl">Instagram</p>
             <p className="mt-3 text-sm opacity-80">Daily Miami diary, drops & exclusives.</p>
@@ -39,7 +39,7 @@ export function Social() {
               Follow @ellene <span className="transition group-hover:translate-x-1">→</span>
             </span>
           </a>
-          <a href={YOUTUBE_VIDEO_LINK} className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-background p-7 text-ink transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--cream)" }}>
+          <a href={YOUTUBE_VIDEO_LINK} target="_blank" rel="noreferrer" className="group relative overflow-hidden rounded-3xl border-2 border-cream bg-background p-7 text-ink transition hover:-translate-y-1" style={{ boxShadow: "8px 8px 0 var(--cream)" }}>
             <p className="font-poster text-[11px] uppercase tracking-[0.3em] opacity-70">Watch</p>
             <p className="font-display text-5xl">YouTube</p>
             <p className="mt-3 text-sm opacity-80">Official video & visualizers.</p>

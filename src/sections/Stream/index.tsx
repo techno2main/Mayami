@@ -22,6 +22,8 @@ export function Stream() {
             <a
               key={p.name}
               href={p.href}
+              target="_blank"
+              rel="noreferrer"
               className={`group relative flex items-center justify-between rounded-2xl border-2 border-ink px-6 py-5 transition hover:-translate-y-1 hover:-translate-x-0.5 ${p.cls}`}
               style={{ boxShadow: "6px 6px 0 var(--ink)" }}
             >

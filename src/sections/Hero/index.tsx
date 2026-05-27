@@ -1,16 +1,16 @@
 import artistImg from "@/assets/mayami-artist.jpg";
 import { MayamiLogo } from "@/components/MayamiLogo";
-import { INSTAGRAM_LINK } from "@/config/links";
+import { TIKTOK_LINK } from "@/config/links";
 
 export function Hero() {
   return (
-    <section className="relative w-full overflow-hidden bg-background">
+    <section id="hero" className="relative w-full overflow-hidden bg-background">
       <div className="absolute inset-0 grain" />
 
       {/* Top bar */}
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 pt-5 sm:px-8">
         <span className="font-poster text-sm uppercase tracking-[0.2em] text-ink">
-          ELM · Miami
+          Ellene Leya Masri 
         </span>
         <a
           href="#stream"
@@ -29,15 +29,12 @@ export function Hero() {
           </div>
 
           <p className="font-poster text-xs uppercase tracking-[0.35em] text-ink">
-            Ellene Leya Masri
+            Mayami, My Miami
           </p>
 
           <div className="mt-4">
-            <MayamiLogo className="max-w-170 drop-shadow-[6px_6px_0_var(--ink)]" />
+            <MayamiLogo className="max-w-120 drop-shadow-[6px_6px_0_var(--ink)] sm:max-w-140" />
             <h1 className="sr-only">Mayami, My Miami</h1>
-            <p className="mt-2 font-display text-[14vw] leading-[0.85] text-stack-blue sm:text-[9vw] md:text-[96px]">
-              My&nbsp;Miami
-            </p>
           </div>
 
           <p className="mt-6 max-w-xl text-base font-semibold text-ink sm:text-lg">
@@ -45,10 +42,9 @@ export function Hero() {
             and follow the journey from the painted walls of Miami.
           </p>
 
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <a href="#stream" className="btn-pop btn-magenta">▶ Pre-Save / Stream</a>
+          <div className="mt-7 flex items-center gap-3">
+            <a href="https://ffm.to/mayami" target="_blank" rel="noreferrer" className="btn-pop btn-magenta">▶ Pre-Save / Stream</a>
             <a href="#video" className="btn-pop btn-aqua">◉ Watch the Video</a>
-            <a href={INSTAGRAM_LINK} className="btn-pop btn-cream">@ Follow on IG</a>
           </div>
         </div>
 
@@ -68,7 +64,7 @@ export function Hero() {
                 height={1920}
                 className="block aspect-3/4 w-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 border-t-2 border-ink bg-cream px-4 py-3">
+              <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between gap-3 border-t-2 border-ink bg-cream px-4 py-3 sm:pl-20">
                 <span className="whitespace-nowrap font-poster text-[10px] uppercase tracking-[0.25em] text-ink">Single · 2026</span>
                 <MayamiLogo className="w-auto! max-h-7" />
               </div>
@@ -80,19 +76,39 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Marquee */}
-      <div className="relative z-10 overflow-hidden border-y-2 border-ink bg-ink py-3">
-        <div className="marquee-track flex w-max gap-10 whitespace-nowrap">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-10 px-5 font-poster text-lg uppercase tracking-widest text-cream">
-              <span>Mayami, My Miami</span><span className="text-magenta">✦</span>
-              <span>Out Tomorrow</span><span className="text-aqua">✦</span>
-              <span>Ellene Leya Masri</span><span className="text-magenta">✦</span>
-              <span>Stream · Watch · Share</span><span className="text-aqua">✦</span>
-            </div>
-          ))}
-        </div>
-      </div>
     </section>
+  );
+}
+
+export function HeroMarquee() {
+  const marqueeLinks = [
+    { label: "Mayami, My Miami", href: "#hero", external: false },
+    { label: "Out Tomorrow", href: "#stream", external: false },
+    { label: "Ellene Leya Masri", href: TIKTOK_LINK, external: true },
+    { label: "Stream · Watch · Share", href: "#video", external: false },
+  ] as const;
+
+  return (
+    <div className="relative z-20 overflow-hidden border-y-2 border-ink bg-ink py-3">
+      <div className="marquee-track flex w-max gap-10 whitespace-nowrap">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-10 px-5 font-poster text-lg uppercase tracking-widest text-cream">
+            {marqueeLinks.map((item, index) => (
+              <div key={`${item.label}-${index}`} className="contents">
+                <a
+                  href={item.href}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noreferrer" : undefined}
+                  className="transition hover:text-aqua focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-aqua"
+                >
+                  {item.label}
+                </a>
+                <span className={index % 2 === 0 ? "text-magenta" : "text-aqua"}>✦</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
