@@ -4,7 +4,7 @@ export const DEEZER_LINK = "https://www.deezer.com/fr/artist/5316718";
 export const YOUTUBE_MUSIC_LINK = "https://www.youtube.com/user/ellenemasriOFFICIAL";
 export const AMAZON_LINK = "https://music.amazon.fr/artists/B00GBFZTHW/ellene-masri";
 export const SOUNDCLOUD_LINK = "https://soundcloud.com/ellenemasri";
-export const YOUTUBE_VIDEO_LINK = "https://www.youtube.com/user/ellenemasriOFFICIAL";
+export const YOUTUBE_VIDEO_LINK = "https://www.youtube.com/watch?v=WiB_UoexqVo&pp=0gcJCQoLAYcqIYzv";
 export const TIKTOK_LINK = "https://www.tiktok.com/@ellenemasri";
 export const INSTAGRAM_LINK = "https://www.instagram.com/ellenemasri/";
 export const RELEASE_DATE = "[RELEASE_DATE]";

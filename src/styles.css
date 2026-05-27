@@ -47,7 +47,7 @@
   --secondary: oklch(0.62 0.28 350);           /* fuchsia magenta */
   --secondary-foreground: oklch(0.98 0.02 80);
 
-  --accent: oklch(0.78 0.16 195);              /* turquoise aqua */
+  --accent: oklch(0.68 0.17 182);              /* deeper teal aqua */
   --accent-foreground: oklch(0.15 0.08 280);
 
   --muted: oklch(0.72 0.18 50);
@@ -57,7 +57,7 @@
   --card-foreground: oklch(0.98 0.02 80);
 
   --magenta: oklch(0.62 0.28 350);
-  --aqua: oklch(0.78 0.16 195);
+  --aqua: oklch(0.68 0.17 182);
   --electric: oklch(0.45 0.27 265);
   --cream: oklch(0.97 0.04 85);
   --ink: oklch(0.15 0.08 280);
@@ -132,7 +132,7 @@
   }
   .btn-pop:hover { transform: translate(-2px,-2px); box-shadow: 9px 9px 0 var(--ink); }
   .btn-pop:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
-  .btn-magenta { background: var(--magenta); color: var(--cream); }
+  .btn-magenta { background: oklch(0.88 0.19 95); color: var(--ink); }
   .btn-aqua    { background: var(--aqua); color: var(--ink); }
   .btn-ink     { background: var(--ink); color: var(--cream); }
   .btn-cream   { background: var(--cream); color: var(--ink); }
