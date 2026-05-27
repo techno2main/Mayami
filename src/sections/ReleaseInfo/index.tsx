@@ -19,14 +19,14 @@ export function ReleaseInfo() {
           />
         </div>
         <div>
-          <p className="font-poster text-xs uppercase tracking-[0.3em] text-(--ink)/60">{content.releaseInfo.kicker}</p>
+          <p className="font-poster text-xs uppercase tracking-[0.3em] text-ink/60">{content.releaseInfo.kicker}</p>
           <h2 className="mt-2 font-display text-5xl leading-[0.9] sm:text-6xl">
             {content.releaseInfo.titleLeft} <span className="text-magenta">{content.releaseInfo.titleHighlight}</span>
           </h2>
           <dl className="mt-8 divide-y divide-(--ink)/15 border-y-2 border-ink">
             {content.releaseInfo.rows.map(({ key: k, value: v }) => (
               <div key={k} className="flex items-center justify-between gap-4 py-3.5">
-                <dt className="font-poster text-xs uppercase tracking-[0.25em] text-(--ink)/60">{k}</dt>
+                <dt className="font-poster text-xs uppercase tracking-[0.25em] text-ink/60">{k}</dt>
                 <dd className="font-display text-lg sm:text-xl">{v}</dd>
               </div>
             ))}
