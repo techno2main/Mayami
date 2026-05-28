@@ -3,11 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content="Mayami, My Miami by Ellene Leya Masri — a premium one-page music release landing page." />
     <title>Mayami</title>
   </head>
   <body>
+    <script>
+      // Force hard refresh à chaque visite (pas lors d'un simple reload)
+      if (window.performance && window.performance.navigation && window.performance.navigation.type !== 1) {
+        window.location.reload(true);
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

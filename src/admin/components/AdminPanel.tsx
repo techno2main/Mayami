@@ -79,7 +79,15 @@ export function AdminPanel() {
   };
 
   const openSection = (id: AdminSectionId) => {
-    setOpenSections((current) => ({ ...current, [id]: true }));
+    setOpenSections(() =>
+      ADMIN_SECTIONS.reduce(
+        (acc, section) => {
+          acc[section.id] = section.id === id;
+          return acc;
+        },
+        {} as Record<AdminSectionId, boolean>
+      )
+    );
     setActiveSection(id);
   };
 
@@ -104,60 +112,47 @@ export function AdminPanel() {
   };
 
   return (
-    <main className="min-h-screen bg-[oklch(0.31_0.11_25)] px-3 py-6 sm:px-6">
-      <div className="mx-auto w-full max-w-6xl rounded-3xl border-2 border-ink bg-cream p-4 sm:p-6" style={{ boxShadow: "12px 12px 0 var(--ink)" }}>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-display text-3xl text-ink sm:text-4xl">Admin Content</h2>
-            <span className="rounded-full border-2 border-ink bg-background px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink/80">
-              {userEmail ? `Connected: ${userEmail}` : "Not signed in"}
-            </span>
-            <div className="ml-1 flex overflow-hidden rounded-full border-2 border-ink">
+    <main className="min-h-screen bg-[oklch(0.31_0.11_25)] px-0 pb-6 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl bg-cream p-4 sm:p-6">
+        <nav className="sticky top-0 z-20 bg-[#6a1b78] px-3 pt-6 pb-4 sm:-mx-6 flex flex-col gap-2">
+          {/* Ligne header : titre + menu burger mobile à droite */}
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-display text-3xl text-cream sm:text-4xl">Admin Panel</h2>
+            <div className="sm:hidden">
               <button
                 type="button"
-                onClick={() => setLocale("en")}
-                className={`px-2 py-1 font-poster text-[10px] uppercase tracking-[0.15em] ${locale === "en" ? "bg-ink text-cream" : "bg-background text-ink"}`}
+                onClick={() => setMobileMenuOpen((v) => !v)}
+                aria-label={mobileMenuOpen ? "Fermer le menu des sections" : "Ouvrir le menu des sections"}
+                className="rounded-full bg-[#6a1b78] p-2 flex items-center justify-center shadow-md"
               >
-                EN
-              </button>
-              <button
-                type="button"
-                onClick={() => setLocale("fr")}
-                className={`px-2 py-1 font-poster text-[10px] uppercase tracking-[0.15em] ${locale === "fr" ? "bg-ink text-cream" : "bg-background text-ink"}`}
-              >
-                FR
+                <span className="sr-only">{mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}</span>
+                {!mobileMenuOpen ? (
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect y="6" width="28" height="3" rx="1.5" fill="white" />
+                    <rect y="13" width="28" height="3" rx="1.5" fill="white" />
+                    <rect y="20" width="28" height="3" rx="1.5" fill="white" />
+                  </svg>
+                ) : (
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="6" width="16" height="3" rx="1.5" fill="white" transform="rotate(45 6 6)" />
+                    <rect x="6" y="19" width="16" height="3" rx="1.5" fill="white" transform="rotate(-45 6 19)" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
-        </div>
-
-        <nav className="-mx-4 sticky top-0 z-20 mb-6 border-2 border-ink bg-cream px-3 py-2 sm:-mx-6">
-          <div className="flex items-center justify-between gap-2 sm:hidden">
-            <p className="font-poster text-[10px] uppercase tracking-[0.2em] text-ink/70">Admin sections</p>
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen((value) => !value)}
-              aria-expanded={mobileMenuOpen}
-              aria-label="Toggle admin sections menu"
-              className="rounded-full border-2 border-ink bg-aqua px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink"
-            >
-              {mobileMenuOpen ? "Close" : "Menu"}
-            </button>
-          </div>
-
-          <div className="hidden flex-wrap gap-2 sm:flex">
+          <div className="hidden flex-wrap gap-2 sm:flex pb-2">
             {ADMIN_SECTIONS.map((section) => (
               <a
                 key={section.id}
                 href={`#${section.id}`}
                 onClick={() => openSection(section.id)}
-                className={`rounded-full border-2 border-ink px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] text-ink transition hover:bg-aqua ${activeSection === section.id ? "bg-aqua" : "bg-background"}`}
+                className={`rounded-full px-3 py-1 font-poster text-[10px] uppercase tracking-[0.15em] transition hover:bg-aqua ${activeSection === section.id ? "bg-[#6a1b78] text-white" : "bg-background text-ink"}`}
               >
                 {section.label}
               </a>
             ))}
           </div>
-
           {mobileMenuOpen ? (
             <div className="mt-2 grid grid-cols-2 gap-2 sm:hidden">
               {ADMIN_SECTIONS.map((section) => (
@@ -168,7 +163,7 @@ export function AdminPanel() {
                     openSection(section.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`rounded-full border-2 border-ink px-3 py-1 text-center font-poster text-[10px] uppercase tracking-[0.15em] text-ink ${activeSection === section.id ? "bg-aqua" : "bg-background"}`}
+                  className={`rounded-full px-3 py-1 text-center font-poster text-[10px] uppercase tracking-[0.15em] transition hover:bg-aqua ${activeSection === section.id ? "bg-[#6a1b78] text-white" : "bg-background text-ink"}`}
                 >
                   {section.label}
                 </a>
@@ -176,6 +171,8 @@ export function AdminPanel() {
             </div>
           ) : null}
         </nav>
+        {/* Padding top pour aérer le contenu sous la nav sticky */}
+        <div className="h-6 sm:h-8"></div>
 
         <CollapsibleSection
           id="admin-cloud"
@@ -625,7 +622,7 @@ type CollapsibleSectionProps = {
 
 function CollapsibleSection({ id, title, isOpen, isActive, onToggle, children, className }: CollapsibleSectionProps) {
   return (
-    <section id={id} className={`scroll-mt-28 mt-8 rounded-2xl border-2 border-ink p-4 ${isActive ? "bg-aqua/20" : "bg-background"} ${className ?? ""}`}>
+    <section id={id} className={`scroll-mt-28 mt-8 rounded-2xl border-2 border-ink p-4 ${isActive ? "bg-[#6a1b78]/20" : "bg-background"} ${className ?? ""}`}>
       <button
         type="button"
         onClick={onToggle}
